@@ -1,27 +1,29 @@
-# SmartHunter Real Estate Premium
+# Smart Hunter Real Estate Premium
 
-A static-first foundation for editorial property presentations and premium real-estate assets.
+A Next.js foundation for editorial real-estate presentations. Property facts and media are configured independently from the shared page components; real property photography must be supplied before a listing is launch-ready.
 
-## Project scope
+## Architecture
 
-- First presentation: Casa A in Girardot.
-- Future presentation archetypes: Residential Luxury and Investment & Hospitality.
-- The first property must be visually approved before work begins on a second property.
+- `src/domain/property.ts` defines the typed property contract.
+- `src/content/properties.ts` stores independent Casa A and Casa B content and media references.
+- `src/app/casas/[slug]/page.tsx` creates one static route and metadata set per property.
+- `src/components/property/` contains the shared editorial composition. Sections share a design system, not a generic card layout.
+- `public/properties/<slug>/` is the property-specific home for approved photographs and video.
+- Next.js `standalone` output feeds the production Docker image.
 
-## Repository status
-
-This initial commit creates the project entry point on `main` so Coolify can connect to the repository. The application source has not yet been committed here; no website is deployed by this README alone.
-
-Real property photos and verified sales-contact details must be supplied before the first presentation is considered launch-ready. Stock imagery must not replace property photography.
+Casa B only contains information already supplied. Its price, exact location, and media remain unset until verified.
 
 ## Local development
 
-Once the application source is committed, the local commands are:
+Requires Node.js 20.9 or newer.
 
 ```sh
-npm test
-npm run build
-npm run preview
+npm ci
+npm run dev
 ```
 
-The current local prototype serves Casa A at `/casa-a-girardot/`.
+Open `http://localhost:3000/casas/casa-a-girardot`. The root route redirects there. Use `npm test`, `npm run typecheck`, and `npm run build` for checks.
+
+## Coolify deployment preparation
+
+See [Coolify deployment notes](docs/deploy-coolify.md). The container listens on `0.0.0.0:3000`. No domain, DNS, or deployment has been configured or performed.
