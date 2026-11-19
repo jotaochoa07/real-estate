@@ -173,5 +173,6 @@ export interface Property {
   seo: {
     title: string;
     description: string;
+    image: PropertyMedia;
   };
 }

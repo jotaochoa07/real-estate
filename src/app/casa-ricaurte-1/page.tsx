@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
       url: CASA_ONE_PUBLIC_URL,
       title: property.seo.title,
       description: property.seo.description,
-      ...(property.media.hero ? { images: [{ url: property.media.hero.src, alt: property.media.hero.alt }] } : {}),
+      images: [{ url: property.seo.image.src, alt: property.seo.image.alt }],
     },
   };
 }

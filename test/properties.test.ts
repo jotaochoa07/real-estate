@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 import { properties } from '../src/content/properties.ts';
@@ -34,6 +34,8 @@ test('Casa 1 uses the approved public URL and its former route redirects', () =>
   assert.equal(properties['casa-ricaurte-1'].slug, 'casa-ricaurte-1');
   assert.equal(properties['casa-ricaurte-2'].slug, 'casa-ricaurte-2');
   assert.ok(layoutSource.includes("metadataBase: new URL('https://realestate.smarthunter.co')"));
+  assert.ok(readFileSync(join(process.cwd(), 'src/app/casa-ricaurte-1/page.tsx'), 'utf8').includes('property.seo.image'));
+  assert.ok(readFileSync(join(process.cwd(), 'src/app/casa-ricaurte-2/page.tsx'), 'utf8').includes('property.seo.image'));
 });
 
 test('Casa A contains only the confirmed facts and announced price', () => {
@@ -49,6 +51,8 @@ test('Casa A contains only the confirmed facts and announced price', () => {
   assert.equal(casaA.department, 'Cundinamarca');
   assert.equal(casaA.seo.title.includes('Girardot'), false);
   assert.equal(casaA.contact.whatsappNumber, '573011360508');
+  assert.equal(casaA.seo.image.src, '/properties/casa-a-girardot/social-preview.jpg');
+  assert.ok(statSync(join(process.cwd(), 'public', casaA.seo.image.src.slice(1))).size < 300_000);
 });
 
 test('Casa A keeps its approved editorial composition in its configuration', () => {
@@ -110,6 +114,8 @@ test('Casa B has an independent editorial narrative and uses only its real photo
   assert.equal(casaB.offer?.previousPriceCop, 750_000_000);
   assert.equal(casaB.offer?.negotiable, false);
   assert.equal(casaB.locationName, 'Condominio San Marcos Poblado');
+  assert.equal(casaB.seo.image.src, '/properties/casa-b-girardot/social-preview.jpg');
+  assert.ok(statSync(join(process.cwd(), 'public', casaB.seo.image.src.slice(1))).size < 300_000);
   assert.equal(casaB.city, 'Ricaurte');
   assert.equal(casaB.department, 'Cundinamarca');
   assert.equal(casaB.media.hero?.src, '/properties/casa-b-girardot/20261107_124114.jpg');
