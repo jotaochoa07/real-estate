@@ -21,4 +21,4 @@ docker build -t smart-hunter-real-estate:local .
 docker run --rm -p 3000:3000 smart-hunter-real-estate:local
 ```
 
-Then open `http://localhost:3000/casas/casa-a-girardot`. Remove the local image when no longer needed with `docker image rm smart-hunter-real-estate:local`.
+Then open `http://localhost:3000/casa-ricaurte-1`. Remove the local image when no longer needed with `docker image rm smart-hunter-real-estate:local`.

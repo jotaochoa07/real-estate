@@ -1,230 +1,44 @@
+import { Fragment } from 'react';
 import Image from 'next/image';
-import type { Property, PropertyMedia } from '@/domain/property';
+import type { EditorialSectionId, EditorialTitle, Property, PropertyMedia } from '@/domain/property';
+import { createWhatsAppUrl, formatWhatsAppNumber } from '@/lib/contact';
 
-type MediaFrameProps = {
-  asset: PropertyMedia | null;
-  label: string;
-  className: string;
-  priority?: boolean;
-};
+const locationLabel = (property: Property) => [property.city, property.department ?? 'Colombia'].join(', ');
+const formatCop = (value: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value);
+const title = (value: EditorialTitle) => value.lines.map((line, index) => <Fragment key={line.text + index}>{index ? <br /> : null}{line.emphasis ? <em>{line.text}</em> : line.text}</Fragment>);
 
-function MediaFrame({ asset, label, className, priority = false }: MediaFrameProps) {
-  if (asset) {
-    return (
-      <figure className={`media-frame ${className}`}>
-        <Image
-          src={asset.src}
-          alt={asset.alt}
-          fill
-          sizes={priority ? '100vw' : '(max-width: 680px) 80vw, 50vw'}
-          priority={priority}
-        />
-        {asset.caption ? <figcaption className="sr-only">{asset.caption}</figcaption> : null}
-      </figure>
-    );
-  }
+function WhatsAppMark() {
+  return <svg className="whatsapp-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 3.1A12.1 12.1 0 0 0 5.6 21.4L4 28l6.8-1.8A12.1 12.1 0 1 0 16 3.1Zm0 2.1a10 10 0 0 1 0 20c-1.7 0-3.3-.4-4.7-1.2l-.5-.3-3.6 1 1-3.5-.3-.5A10 10 0 0 1 16 5.2Z" fill="currentColor" /><path d="M12.1 10.1c-.3-.7-.6-.7-.9-.7h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.2-1.2 2.9s1.2 3.3 1.4 3.5c.2.2 2.3 3.7 5.7 5 .7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2.1-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.7-.4l-2.1-1c-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.5-1.6-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.6.2-.2.2-.3.3-.5.1-.2 0-.4 0-.6l-1-2.4Z" fill="#fff" /></svg>;
+}
 
-  return (
-    <div className={`media-frame media-frame--pending ${className}`} role="img" aria-label={label}>
-      <span className="media-frame__index">SMART HUNTER / ARCHIVO VISUAL</span>
-      <span className="media-frame__caption">{label}</span>
-      <span className="media-frame__mark" aria-hidden="true">+</span>
-    </div>
-  );
+function MediaFrame({ asset, label, className, priority = false }: { asset: PropertyMedia | null; label: string; className: string; priority?: boolean }) {
+  if (asset) return <figure className={'media-frame ' + className}><Image src={asset.src} alt={asset.alt} fill sizes={priority ? '100vw' : '(max-width: 680px) 80vw, 50vw'} priority={priority} />{asset.caption ? <figcaption className="sr-only">{asset.caption}</figcaption> : null}</figure>;
+  return <div className={'media-frame media-frame--pending ' + className} role="img" aria-label={label}><span className="media-frame__index">SMART HUNTER / ARCHIVO VISUAL</span><span className="media-frame__caption">{label}</span><span className="media-frame__mark" aria-hidden="true">+</span></div>;
 }
 
 function Header({ property }: { property: Property }) {
-  return (
-    <header className="site-header" id="top">
-      <a className="wordmark" href="#top" aria-label="Smart Hunter Real Estate, volver arriba">
-        SMART HUNTER<span>REAL ESTATE</span>
-      </a>
-      <nav aria-label="Navegación principal">
-        <a href="#gallery">La propiedad</a>
-        <a href="#location">Ubicación</a>
-        <a href="#contact">Contacto</a>
-      </nav>
-      <a className="header-cta" href="#contact">Conocer {property.name.split(' · ')[0]} <span aria-hidden="true">↗</span></a>
-    </header>
-  );
+  const sections = new Set(property.editorial.sections);
+  const navigation = [{ id: 'gallery', label: 'La propiedad' }, { id: 'location', label: 'Ubicación' }, { id: 'offer', label: 'Contacto' }].filter(({ id }) => sections.has(id as EditorialSectionId));
+  const intent = property.editorial.headerCta?.intent;
+  const phone = formatWhatsAppNumber(property.contact.whatsappNumber);
+  const url = intent ? createWhatsAppUrl(property, intent) : null;
+  return <header className="site-header" id="top"><a className="wordmark" href="#top" aria-label="Smart Hunter Real Estate, volver arriba">SMART HUNTER<span>REAL ESTATE</span></a>{navigation.length ? <nav aria-label="Navegación principal">{navigation.map(({ id, label }) => <a key={id} href={'#' + id}>{label}</a>)}</nav> : null}{url && phone ? <a className="header-cta header-cta--whatsapp" href={url} target="_blank" rel="noopener noreferrer" aria-label={'Escribir por WhatsApp al ' + phone}><WhatsAppMark /><span>{phone}</span></a> : null}</header>;
 }
 
 function Hero({ property }: { property: Property }) {
-  const location = property.locationName ?? property.city;
-
-  return (
-    <section className="hero" aria-labelledby="hero-title">
-      <MediaFrame asset={property.media.hero} label="Fotografía principal pendiente de selección" className="hero__image" priority />
-      <div className="hero__veil" aria-hidden="true" />
-      <div className="hero__topline"><span>SMART HUNTER <i>·</i> RESIDENCIAL</span><span>{property.slug === 'casa-a-girardot' ? '01' : '02'} / GIRARDOT</span></div>
-      <div className="hero__copy">
-        <p className="eyebrow eyebrow--light">{property.eyebrow}</p>
-        <h1 id="hero-title">{property.headline}</h1>
-        <a className="text-link text-link--light" href="#property-intro">Descubrir la propiedad <span aria-hidden="true">↓</span></a>
-      </div>
-      <div className="hero__location"><span>{location}</span><span>{property.city}, Colombia</span></div>
-      {!property.media.hero ? <span className="hero__asset-note">Fotografía real pendiente de selección</span> : null}
-    </section>
-  );
+  const { hero } = property.editorial;
+  const price = hero.price && property.offer?.previousPriceCop && property.offer.priceCop ? hero.price : null;
+  return <section className="hero" aria-labelledby="hero-title"><MediaFrame asset={property.media.hero} label="Fotografía principal pendiente de selección" className="hero__image" priority /><div className="hero__veil" aria-hidden="true" />{hero.showTopline ? <div className="hero__topline"><span>SMART HUNTER <i>·</i> RESIDENCIAL</span><span>02 / {property.city.toUpperCase()}</span></div> : null}<div className="hero__copy"><p className="eyebrow eyebrow--light">{hero.eyebrow}</p><h1 id="hero-title" className={hero.titleClassName}>{title(hero.title)}</h1><div className="hero__actions"><a className="text-link text-link--light" href="#property-intro">Descubrir la propiedad <span aria-hidden="true">↓</span></a>{hero.propertyVideoLink && property.media.videos.property?.youtubeId ? <a className="hero__video-link" href={'#' + hero.propertyVideoLink.anchorId} aria-label={hero.propertyVideoLink.ariaLabel}><span className="hero__play" aria-hidden="true">▶</span><span><small>{hero.propertyVideoLink.eyebrow}</small>{hero.propertyVideoLink.label}</span></a> : null}</div></div>{price ? <div className="hero__price"><span className="hero__price-kicker">{price.kicker}</span><div className="hero__price-row"><span>{price.previousLabel}</span><del>{formatCop(property.offer!.previousPriceCop!)}</del></div><div className="hero__price-row hero__price-row--current"><span>{price.currentLabel}</span><strong>{formatCop(property.offer!.priceCop)}</strong></div><small>{price.negotiableLabel}</small></div> : null}{hero.showLocation ? <div className="hero__location"><span>{property.locationName ?? property.city}</span><span>{locationLabel(property)}</span></div> : null}{!property.media.hero ? <span className="hero__asset-note">Fotografía real pendiente de selección</span> : null}</section>;
 }
 
-function Introduction({ property }: { property: Property }) {
-  return (
-    <section className="intro section-shell" id="property-intro" aria-labelledby="intro-title">
-      <div className="intro__index"><span>01 — LA PROPIEDAD</span><span className="rule" aria-hidden="true" /><span>GIRARDOT / COLOMBIA</span></div>
-      <div className="intro__body">
-        <div>
-          <p className="eyebrow">{property.locationName ?? 'Girardot · Colombia'}</p>
-          <h2 id="intro-title">Una propiedad<br /><em>con identidad propia.</em></h2>
-        </div>
-        <div className="intro__aside"><p>{property.introduction}</p><span>Una lectura de la propiedad<br />en sus propios términos →</span></div>
-      </div>
-    </section>
-  );
-}
-
-function Facts({ property }: { property: Property }) {
-  return (
-    <section className="facts" aria-label="Características principales">
-      <div className="facts__heading"><span>02 — EN CIFRAS</span><span>DATOS VERIFICADOS DE LA PROPIEDAD</span></div>
-      <dl className="facts__grid">
-        {property.facts.map((fact) => (
-          <div className="fact" key={fact.label}>
-            <dt>{fact.label}</dt>
-            <dd>{fact.value}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  );
-}
-
-function Gallery({ property }: { property: Property }) {
-  const frames = [property.media.gallery[0] ?? null, property.media.gallery[1] ?? null];
-
-  return (
-    <section className="gallery section-shell" id="gallery" aria-labelledby="gallery-title">
-      <div className="section-heading">
-        <p className="eyebrow">03 — UNA MIRADA PROPIA</p>
-        <h2 id="gallery-title">La propiedad,<br /><em>sin artificios.</em></h2>
-        <p className="section-heading__note">{property.media.gallery.length ? 'Una selección de imágenes reales de la propiedad.' : 'La selección visual se completará con fotografías reales del inmueble. No utilizamos imágenes de stock como sustituto.'}</p>
-      </div>
-      <div className="gallery__collage">
-        <MediaFrame asset={frames[0] ?? null} label="Fotografía real pendiente de selección" className="gallery__frame gallery__frame--large" />
-        <MediaFrame asset={frames[1] ?? null} label="Detalle fotográfico pendiente de selección" className="gallery__frame gallery__frame--small" />
-        <p className="gallery__caption"><span>SELECCIÓN VISUAL</span><span>{property.media.gallery.length ? 'Archivo visual de la propiedad' : 'Fotografías reales pendientes de selección'}</span></p>
-      </div>
-    </section>
-  );
-}
-
-function Video({ property }: { property: Property }) {
-  if (!property.media.video) return null;
-
-  return (
-    <section className="film section-shell" aria-labelledby="film-title">
-      <p className="eyebrow">04 — RECORRIDO AUDIOVISUAL</p>
-      <h2 id="film-title">La casa en <em>movimiento.</em></h2>
-      <video className="film__video" controls preload="metadata" aria-label={`Recorrido audiovisual de ${property.name}`}>
-        <source src={property.media.video} type="video/mp4" />
-        Tu navegador no puede reproducir este video.
-      </video>
-    </section>
-  );
-}
-
-function Experience({ property }: { property: Property }) {
-  return (
-    <section className="experience" aria-labelledby="experience-title">
-      <div className="experience__visual">
-        <MediaFrame asset={property.media.gallery[0] ?? null} label="Fotografía de la propiedad pendiente de selección" className="experience__image" />
-        <span className="experience__vertical">ARQUITECTURA · ESPACIO · VIDA</span>
-      </div>
-      <div className="experience__copy">
-        <p className="eyebrow">05 — VIDA EN CASA</p>
-        <h2 id="experience-title">Espacio.<br />Privacidad.<br /><em>Otra manera.</em></h2>
-        <p>{property.introduction}</p>
-        <ul className="amenity-list">
-          {property.features.map((feature, index) => <li key={feature}><span>{String(index + 1).padStart(2, '0')}</span>{feature}</li>)}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-function Location({ property }: { property: Property }) {
-  return (
-    <section className="location section-shell" id="location" aria-labelledby="location-title">
-      <p className="eyebrow">06 — UBICACIÓN</p>
-      <div className="location__body">
-        <h2 id="location-title">{property.city},<br /><em>con privacidad.</em></h2>
-        <div>
-          <p className="location__place">{property.locationName ?? 'Ubicación precisa por confirmar'}</p>
-          <p>{property.city}, Colombia</p>
-          <span className="location__note">Los detalles del entorno se agregarán al confirmar la información.</span>
-        </div>
-      </div>
-      <div className="location__line"><span>REGIÓN DEL ALTO MAGDALENA</span><span>COLOMBIA <b aria-hidden="true">↗</b></span></div>
-    </section>
-  );
-}
-
-function createWhatsAppUrl(property: Property, action: string): string | null {
-  const number = property.contact.whatsappNumber?.replace(/\D/g, '');
-  if (!number || number.length < 10) return null;
-  const message = `Hola, quiero ${action} sobre ${property.name} en ${property.city}.`;
-  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
-}
-
-function Offer({ property }: { property: Property }) {
-  const whatsappUrl = createWhatsAppUrl(property, 'recibir información');
-  const visitUrl = createWhatsAppUrl(property, 'agendar una visita');
-  const price = property.offer
-    ? new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(property.offer.priceCop)
-    : null;
-
-  return (
-    <section className="offer" id="contact" aria-labelledby="contact-title">
-      <div className="offer__top"><span>07 — PRECIO Y VISITAS</span><span>{property.name.toUpperCase()}</span></div>
-      <div className="offer__body">
-        <div><p className="eyebrow eyebrow--light">Una propiedad para descubrir</p><h2 id="contact-title">Hagamos espacio<br />para <em>conocerla.</em></h2><p className="offer__place">{property.locationName ?? property.city} · {property.city}</p></div>
-        <div className="offer__price"><span>{price ? 'PRECIO ANUNCIADO' : 'PRECIO'}</span><strong>{price ?? 'No informado'}</strong><small>{property.offer?.negotiable ? 'Negociable' : 'Información pendiente de confirmación'}</small></div>
-      </div>
-      <div className="offer__actions">
-        {whatsappUrl ? <a className="button button--light" href={whatsappUrl}>Solicitar información <span aria-hidden="true">↗</span></a> : <button className="button button--light" type="button" disabled>Solicitar información</button>}
-        {visitUrl ? <a className="button button--outline" href={visitUrl}>Agendar una visita <span aria-hidden="true">↗</span></a> : <button className="button button--outline" type="button" disabled>Agendar una visita</button>}
-        <p className="offer__status" role="status">{whatsappUrl ? 'Contacto por WhatsApp disponible.' : 'Canal comercial pendiente de configuración.'}</p>
-      </div>
-    </section>
-  );
-}
-
-function Footer({ property }: { property: Property }) {
-  return (
-    <footer className="site-footer">
-      <a className="wordmark wordmark--footer" href="#top" aria-label="Smart Hunter, volver arriba">SMART HUNTER<span>REAL ESTATE</span></a>
-      <p>{property.name}<br />{property.city}, Colombia</p>
-      <a href="#top" className="footer-top">VOLVER ARRIBA ↑</a>
-    </footer>
-  );
-}
-
-export function PropertyEditorialPage({ property }: { property: Property }) {
-  return (
-    <>
-      <a className="skip-link" href="#main-content">Saltar al contenido</a>
-      <Header property={property} />
-      <main id="main-content">
-        <Hero property={property} />
-        <Introduction property={property} />
-        <Facts property={property} />
-        <Gallery property={property} />
-        <Video property={property} />
-        <Experience property={property} />
-        <Location property={property} />
-        <Offer property={property} />
-      </main>
-      <Footer property={property} />
-    </>
-  );
-}
+function Introduction({ property }: { property: Property }) { const value = property.editorial.introduction; return <section className="intro section-shell" id="property-intro" aria-labelledby="intro-title"><div className="intro__index"><span>01 — LA PROPIEDAD</span><span className="rule" aria-hidden="true" /><span>{property.city.toUpperCase()} / {property.department?.toUpperCase() ?? 'COLOMBIA'}</span></div><div className="intro__body"><div><p className="eyebrow">{value.eyebrow}</p><h2 id="intro-title">{title(value.title)}</h2></div><div className="intro__aside"><p>{value.body}</p><span>{value.aside}</span></div></div></section>; }
+function Facts({ property }: { property: Property }) { return <section className="facts" aria-label="Características principales"><div className="facts__heading"><span>02 — EN CIFRAS</span><span>DATOS VERIFICADOS DE LA PROPIEDAD</span></div><dl className="facts__grid">{property.facts.map((fact) => <div className="fact" key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl></section>; }
+function Gallery({ property }: { property: Property }) { const config = property.editorial.gallery; const frames = property.media.gallery; if (!config || !frames.length) return null; return <section className="gallery section-shell" id="gallery" aria-labelledby="gallery-title"><div className="section-heading"><p className="eyebrow">{config.eyebrow}</p><h2 id="gallery-title">{title(config.title)}</h2><p className="section-heading__note">{config.description}</p></div><div className="gallery__collage"><div className="gallery__opening">{frames.slice(0, 2).map((asset, index) => <MediaFrame key={asset.src} asset={asset} label="Fotografía de la propiedad" className={index ? 'gallery__frame gallery__frame--small' : 'gallery__frame gallery__frame--large'} />)}</div>{frames.length > 2 ? <div className="gallery__details">{frames.slice(2).map((asset) => <MediaFrame key={asset.src} asset={asset} label="Detalle fotográfico" className="gallery__detail" />)}</div> : null}<p className="gallery__caption"><span>SELECCIÓN VISUAL</span><span>Archivo visual de la propiedad</span></p></div></section>; }
+function Video({ property, role }: { property: Property; role: 'shared' | 'property' }) { const video = property.media.videos[role]; const config = property.editorial.videos[role]; if (!video?.youtubeId || !config || !/^[A-Za-z0-9_-]{11}$/.test(video.youtubeId)) return null; const description = 'description' in config ? config.description : undefined; return <section className={'film section-shell' + (role === 'property' ? ' film--featured' : '')} id={config.anchorId} aria-labelledby={config.anchorId + '-title'}><p className={'eyebrow' + (role === 'property' ? ' eyebrow--light' : '')}>{config.eyebrow}</p><h2 id={config.anchorId + '-title'}>{config.title}</h2>{description ? <p className="film__description">{description}</p> : null}<div className="film__grid"><iframe src={'https://www.youtube-nocookie.com/embed/' + video.youtubeId} title={config.title} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div></section>; }
+function NarrativeBlock({ property, section }: { property: Property; section: 'closed-sale' | 'bifamiliar' | 'main-home' | 'independent-apartment' | 'pool' }) { const block = property.editorial.narrativeBlocks?.[section]; if (!block) return null; const media = block.mediaIndex === undefined ? null : property.media.gallery[block.mediaIndex] ?? null; return <section className={'experience editorial-block editorial-block--' + block.tone} id={section} aria-labelledby={section + '-title'}><div className="experience__visual"><MediaFrame asset={media} label="Fotografía de la propiedad pendiente de selección" className="experience__image" /><span className="experience__vertical">ARQUITECTURA · ESPACIO · VIDA</span></div><div className="experience__copy"><p className="eyebrow">{block.eyebrow}</p><h2 id={section + '-title'}>{title(block.title)}</h2>{block.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}{block.highlight ? <p className="experience__secondary">{block.highlight}</p> : null}{block.features?.length ? <ul className="amenity-list">{block.features.map((feature, index) => <li key={feature}><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>{feature}</li>)}</ul> : null}</div></section>; }
+function Experience({ property }: { property: Property }) { const value = property.editorial.experience; if (!value || !property.features.length) return null; return <section className="experience" aria-labelledby="experience-title"><div className="experience__visual"><MediaFrame asset={property.media.gallery[0] ?? null} label={value.visualLabel} className="experience__image" /><span className="experience__vertical">ARQUITECTURA · ESPACIO · VIDA</span></div><div className={'experience__copy' + (value.copyClassName ? ' ' + value.copyClassName : '')}><p className="eyebrow">{value.eyebrow}</p><h2 id="experience-title">{title(value.title)}</h2><p>{value.body}</p>{value.secondary ? <p className="experience__secondary">{value.secondary}</p> : null}<ul className={'amenity-list' + (value.featureMarker === 'icon' ? ' amenity-list--casa-one' : '')}>{property.features.map((feature, index) => <li key={feature}><span aria-hidden="true">{value.featureMarker === 'icon' ? <svg className="amenity-icon" viewBox="0 0 16 16" focusable="false"><path d="m3.5 8.2 2.8 2.8 6.2-6.2" /></svg> : String(index + 1).padStart(2, '0')}</span>{feature}</li>)}</ul></div></section>; }
+function Location({ property }: { property: Property }) { const value = property.editorial.location; if (!value) return null; return <section className="location section-shell" id="location" aria-labelledby="location-title"><p className="eyebrow">{value.eyebrow}</p><div className="location__body"><h2 id="location-title">{title(value.title)}</h2><div><p className="location__place">{value.place}</p><p>{value.description}</p>{value.address ? <p className="location__address">{value.address}</p> : null}</div></div>{value.map ? <div className="location__map"><div className="location__map-frame"><iframe src={value.map.embedUrl} title={value.map.title} width="600" height="450" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="strict-origin-when-cross-origin" /></div><a className="location__directions" href={value.map.directionsUrl} target="_blank" rel="noopener noreferrer">{value.map.directionsLabel} <span aria-hidden="true">↗</span></a></div> : null}<div className="location__line"><span>{value.lineStart}</span><span>COLOMBIA <b aria-hidden="true">↗</b></span></div></section>; }
+function Offer({ property }: { property: Property }) { const value = property.editorial.offer; if (!value || !property.offer) return null; const phone = formatWhatsAppNumber(property.contact.whatsappNumber); const primary = createWhatsAppUrl(property, value.primaryAction.intent); const secondary = createWhatsAppUrl(property, value.secondaryAction.intent); return <section className="offer" id="offer" aria-labelledby="contact-title"><div className="offer__top"><span>07 — PRECIO Y VISITAS</span><span>{property.name.toUpperCase()}</span></div><div className="offer__body"><div><p className="eyebrow eyebrow--light">{value.eyebrow}</p><h2 id="contact-title">{title(value.title)}</h2>{value.description ? <p className="offer__copy">{value.description}</p> : null}<p className="offer__place">{property.locationName ?? property.city} · {locationLabel(property)}</p></div><div className="offer__price"><span>{value.priceLabel}</span>{property.offer.previousPriceCop ? <><span className="offer__price-before-label">{value.previousPriceLabel}</span><del>{formatCop(property.offer.previousPriceCop)}</del></> : null}<span className="offer__price-current-label">{value.currentPriceLabel}</span><strong>{formatCop(property.offer.priceCop)}</strong><small>{property.offer.negotiable ? value.negotiableLabel : ''}</small></div></div><div className="offer__actions">{primary && phone ? <a className="button button--whatsapp" href={primary} target="_blank" rel="noopener noreferrer" aria-label={'Escribir por WhatsApp al ' + phone}><WhatsAppMark /><span>{value.primaryAction.label}<small>{phone}</small></span></a> : null}{secondary ? <a className="button button--outline" href={secondary} target="_blank" rel="noopener noreferrer">{value.secondaryAction.label} <span aria-hidden="true">↗</span></a> : null}</div></section>; }
+function Footer({ property }: { property: Property }) { return <footer className="site-footer"><a className="wordmark wordmark--footer" href="#top" aria-label="Smart Hunter, volver arriba">SMART HUNTER<span>REAL ESTATE</span></a><p>{property.name}<br />{locationLabel(property)}</p><a href="#top" className="footer-top">VOLVER ARRIBA ↑</a></footer>; }
+function renderSection(section: EditorialSectionId, property: Property) { switch (section) { case 'hero': return <Hero key={section} property={property} />; case 'property-video': return <Video key={section} property={property} role="property" />; case 'introduction': return <Introduction key={section} property={property} />; case 'facts': return <Facts key={section} property={property} />; case 'gallery': return <Gallery key={section} property={property} />; case 'shared-video': return <Video key={section} property={property} role="shared" />; case 'closed-sale': case 'bifamiliar': case 'main-home': case 'independent-apartment': case 'pool': return <NarrativeBlock key={section} property={property} section={section} />; case 'experience': return <Experience key={section} property={property} />; case 'location': return <Location key={section} property={property} />; case 'offer': return <Offer key={section} property={property} />; } }
+export function PropertyEditorialPage({ property }: { property: Property }) { return <><a className="skip-link" href="#main-content">Saltar al contenido</a><Header property={property} /><main id="main-content">{property.editorial.sections.map((section) => renderSection(section, property))}</main><Footer property={property} /></>; }

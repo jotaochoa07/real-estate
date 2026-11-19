@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { PropertyEditorialPage } from '@/components/property/PropertyEditorialPage';
 import { getPropertyBySlug, getPropertySlugs } from '@/lib/properties';
 
@@ -13,6 +13,8 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PropertyRouteProps): Promise<Metadata> {
   const { slug } = await params;
+  if (slug === 'casa-a-girardot' || slug === 'casa-ricaurte-1') redirect('/casa-ricaurte-1');
+
   const property = getPropertyBySlug(slug);
   if (!property) return {};
 
@@ -30,6 +32,8 @@ export async function generateMetadata({ params }: PropertyRouteProps): Promise<
 
 export default async function PropertyRoute({ params }: PropertyRouteProps) {
   const { slug } = await params;
+  if (slug === 'casa-a-girardot' || slug === 'casa-ricaurte-1') redirect('/casa-ricaurte-1');
+
   const property = getPropertyBySlug(slug);
   if (!property) notFound();
 

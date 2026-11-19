@@ -22,8 +22,8 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:3000/casas/casa-a-girardot`. The root route redirects there. Use `npm test`, `npm run typecheck`, and `npm run build` for checks.
+Open `http://localhost:3000/casa-ricaurte-1`. The root route redirects there; the former Casa 1 URL also redirects to this canonical path. Use `npm test`, `npm run typecheck`, and `npm run build` for checks.
 
 ## Coolify deployment preparation
 
-See [Coolify deployment notes](docs/deploy-coolify.md). The container listens on `0.0.0.0:3000`. No domain, DNS, or deployment has been configured or performed.
+See [Coolify deployment notes](docs/deploy-coolify.md). The container listens on `0.0.0.0:3000`. The configured domain is `https://realestate.smarthunter.co`; DNS is managed outside this repository.
