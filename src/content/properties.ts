@@ -149,9 +149,9 @@ export const properties = {
       description: 'Casa en el Condominio San Marcos Poblado, Ricaurte, Cundinamarca. 800 m² reportados, cinco habitaciones, piscina privada y apartamento independiente.',
     },
   },
-  'casa-b-girardot': {
+  'casa-ricaurte-2': {
     id: 'girardot-casa-b',
-    slug: 'casa-b-girardot',
+    slug: 'casa-ricaurte-2',
     archetype: 'residential-luxury',
     name: 'Casa B · San Marcos',
     city: 'Ricaurte',

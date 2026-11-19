@@ -14,6 +14,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PropertyRouteProps): Promise<Metadata> {
   const { slug } = await params;
   if (slug === 'casa-a-girardot' || slug === 'casa-ricaurte-1') redirect('/casa-ricaurte-1');
+  if (slug === 'casa-b-girardot') redirect('/casa-ricaurte-2');
 
   const property = getPropertyBySlug(slug);
   if (!property) return {};
@@ -33,6 +34,7 @@ export async function generateMetadata({ params }: PropertyRouteProps): Promise<
 export default async function PropertyRoute({ params }: PropertyRouteProps) {
   const { slug } = await params;
   if (slug === 'casa-a-girardot' || slug === 'casa-ricaurte-1') redirect('/casa-ricaurte-1');
+  if (slug === 'casa-b-girardot') redirect('/casa-ricaurte-2');
 
   const property = getPropertyBySlug(slug);
   if (!property) notFound();

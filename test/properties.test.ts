@@ -7,7 +7,7 @@ import { createWhatsAppUrl, formatWhatsAppNumber } from '../src/lib/contact.ts';
 
 test('Girardot property records keep unique slugs, identities, and media collections', () => {
   const casaA = properties['casa-ricaurte-1'];
-  const casaB = properties['casa-b-girardot'];
+  const casaB = properties['casa-ricaurte-2'];
 
   assert.notEqual(casaA.id, casaB.id);
   assert.notEqual(casaA.slug, casaB.slug);
@@ -25,9 +25,10 @@ test('Casa 1 uses the approved public URL and its former route redirects', () =>
   assert.ok(casaOneRoute.includes("getPropertyBySlug('casa-ricaurte-1')"));
   assert.ok(casaOneRoute.includes('https://realestate.smarthunter.co/casa-ricaurte-1'));
   assert.ok(legacyRoute.includes("redirect('/casa-ricaurte-1')"));
+  assert.ok(legacyRoute.includes("redirect('/casa-ricaurte-2')"));
   assert.ok(homeRoute.includes("redirect('/casa-ricaurte-1')"));
   assert.equal(properties['casa-ricaurte-1'].slug, 'casa-ricaurte-1');
-  assert.equal(properties['casa-b-girardot'].slug, 'casa-b-girardot');
+  assert.equal(properties['casa-ricaurte-2'].slug, 'casa-ricaurte-2');
 });
 
 test('Casa A contains only the confirmed facts and announced price', () => {
@@ -92,7 +93,7 @@ test('Casa A keeps its approved editorial composition in its configuration', () 
 });
 
 test('Casa B has an independent editorial narrative and uses only its real photography', () => {
-  const casaB = properties['casa-b-girardot'];
+  const casaB = properties['casa-ricaurte-2'];
 
   assert.deepEqual(casaB.facts.map(({ value }) => value), ['700 m²', '7', '7', '2', '1', '4', 'Bifamiliar']);
   assert.ok(casaB.features.includes('7 habitaciones'));
@@ -120,7 +121,7 @@ test('Casa B has an independent editorial narrative and uses only its real photo
 
 test('Casa A uses its own real property photography without assigning images to Casa B', () => {
   const casaA = properties['casa-ricaurte-1'];
-  const casaB = properties['casa-b-girardot'];
+  const casaB = properties['casa-ricaurte-2'];
 
   assert.equal(casaA.media.hero?.src, '/properties/casa-a-girardot/hero-pool.webp');
   assert.ok(casaA.media.gallery.length >= 5);

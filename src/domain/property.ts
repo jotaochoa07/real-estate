@@ -1,4 +1,4 @@
-export type PropertySlug = 'casa-ricaurte-1' | 'casa-b-girardot';
+export type PropertySlug = 'casa-ricaurte-1' | 'casa-ricaurte-2';
 
 export interface PropertyMedia {
   src: string;
