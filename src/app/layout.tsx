@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://realestate.smarthunter.co'),
   title: {
     default: 'Smart Hunter Real Estate',
     template: '%s | Smart Hunter Real Estate',

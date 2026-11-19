@@ -22,6 +22,7 @@ test('Casa 1 uses the approved public URL and its former route redirects', () =>
   const legacyRoute = readFileSync(join(process.cwd(), 'src/app/casas/[slug]/page.tsx'), 'utf8');
   const homeRoute = readFileSync(join(process.cwd(), 'src/app/page.tsx'), 'utf8');
   const casaTwoRoute = readFileSync(join(process.cwd(), 'src/app/casa-ricaurte-2/page.tsx'), 'utf8');
+  const layoutSource = readFileSync(join(process.cwd(), 'src/app/layout.tsx'), 'utf8');
 
   assert.ok(casaOneRoute.includes("getPropertyBySlug('casa-ricaurte-1')"));
   assert.ok(casaOneRoute.includes('https://realestate.smarthunter.co/casa-ricaurte-1'));
@@ -32,6 +33,7 @@ test('Casa 1 uses the approved public URL and its former route redirects', () =>
   assert.ok(homeRoute.includes("redirect('/casa-ricaurte-1')"));
   assert.equal(properties['casa-ricaurte-1'].slug, 'casa-ricaurte-1');
   assert.equal(properties['casa-ricaurte-2'].slug, 'casa-ricaurte-2');
+  assert.ok(layoutSource.includes("metadataBase: new URL('https://realestate.smarthunter.co')"));
 });
 
 test('Casa A contains only the confirmed facts and announced price', () => {
@@ -59,20 +61,20 @@ test('Casa A keeps its approved editorial composition in its configuration', () 
   assert.equal(casaA.editorial.hero.eyebrow, 'Dos espacios: Casa principal + apartamento independiente');
   assert.equal(casaA.editorial.introduction.body, 'Una distribución que permite disfrutar la casa principal y aprovechar un apartamento independiente, con posibilidades de uso y renta por separado.');
   assert.equal(casaA.facts[0]?.value, '800 m²');
-  assert.equal(casaA.media.videos.property?.title, 'Hay lugares que se sienten como vacaciones.');
+  assert.equal(casaA.media.videos.property?.title, 'Hay lugares que se sienten como vacaciones');
   assert.equal(casaA.media.videos.shared?.title, '10 razones para comprar estas casas');
 
   for (const copy of [
-    '10 razones para mirar esta propiedad de otra manera.',
-    'Dos espacios. Una misma propiedad.',
-    'Cada espacio tiene algo que ofrecer.',
+    '10 razones para mirar esta propiedad de otra manera',
+    'Dos espacios. Una misma propiedad',
+    'Cada espacio tiene algo que ofrecer',
     'Piscina, zonas sociales, espacios interiores y rincones para disfrutar sin prisa.',
-    'Disfruta una parte. Aprovecha las dos.',
+    'Disfruta una parte. Aprovecha las dos',
     'Una casa principal para disfrutar en familia y un apartamento independiente con potencial para generar ingresos mediante renta vacacional.',
     'Una distribución que abre posibilidades: uso familiar, alojamiento de invitados o aprovechamiento comercial del espacio independiente.',
-    'Tu espacio, lejos de la rutina.',
+    'Tu espacio, lejos de la rutina',
     'Un entorno residencial privado para disfrutar el clima y la tranquilidad de la zona.',
-    'Hay propiedades que merecen conocerse en persona.',
+    'Hay propiedades que merecen conocerse en persona',
     'Ven a descubrir sus espacios, su distribución y todas las posibilidades que ofrece.',
     'QUIERO CONOCER LA PROPIEDAD',
     'CONSULTAR POR WHATSAPP',
@@ -101,6 +103,8 @@ test('Casa B has an independent editorial narrative and uses only its real photo
   assert.deepEqual(casaB.facts.map(({ value }) => value), ['700 m²', '7', '7', '2', '1', '4', 'Bifamiliar']);
   assert.ok(casaB.features.includes('7 habitaciones'));
   assert.ok(casaB.features.includes('7 baños'));
+  assert.ok(casaB.editorial.narrativeBlocks?.['independent-apartment']?.features?.includes('3 habitaciones'));
+  assert.equal(casaB.editorial.narrativeBlocks?.['independent-apartment']?.features?.includes('2 habitaciones'), false);
   assert.ok(casaB.editorial.narrativeBlocks?.['main-home']?.features?.includes('7 baños'));
   assert.equal(casaB.offer?.priceCop, 650_000_000);
   assert.equal(casaB.offer?.previousPriceCop, 750_000_000);
@@ -110,16 +114,17 @@ test('Casa B has an independent editorial narrative and uses only its real photo
   assert.equal(casaB.department, 'Cundinamarca');
   assert.equal(casaB.media.hero?.src, '/properties/casa-b-girardot/20261107_124114.jpg');
   assert.ok(casaB.media.gallery.every(({ src }) => src.startsWith('/properties/casa-b-girardot/')));
+  assert.equal(casaB.media.gallery.some(({ src }) => src.endsWith('20261107_124224.jpg')), false);
   assert.ok([casaB.media.hero, ...casaB.media.gallery].every((asset) => asset && existsSync(join(process.cwd(), 'public', asset.src.slice(1)))));
   assert.equal(casaB.media.videos.shared?.title, '10 razones para comprar estas casas');
   assert.equal(casaB.media.videos.property?.youtubeId, 'SWz5ofRMEVU');
-  assert.equal(casaB.media.videos.property?.title, 'Recorrido de Casa 2.');
+  assert.equal(casaB.media.videos.property?.title, 'Recorrido de Casa 2');
   assert.equal(casaB.media.videos.shared?.youtubeId, 'rJWKPUV2EqI');
   assert.deepEqual(casaB.editorial.sections, ['hero', 'property-video', 'closed-sale', 'facts', 'bifamiliar', 'main-home', 'independent-apartment', 'pool', 'gallery', 'shared-video', 'location', 'offer']);
-  assert.equal(casaB.editorial.hero.title.lines.map(({ text }) => text).join(' '), 'Llegas con las maletas. Lo demás ya está aquí.');
+  assert.equal(casaB.editorial.hero.title.lines.map(({ text }) => text).join(' '), 'Llegas con las maletas Lo demás ya está aquí');
   assert.equal(casaB.editorial.narrativeBlocks?.['closed-sale']?.highlight, 'SOLO TRAE TU ROPA. LO DEMÁS TE ESPERA.');
-  assert.deepEqual(casaB.editorial.narrativeBlocks?.['independent-apartment']?.features, ['Sala-comedor', '2 habitaciones', 'Cocina']);
-  assert.equal(casaB.editorial.videos.property?.title, 'Conoce Casa 2 por dentro.');
+  assert.deepEqual(casaB.editorial.narrativeBlocks?.['independent-apartment']?.features, ['Sala-comedor', '3 habitaciones', 'Cocina']);
+  assert.equal(casaB.editorial.videos.property?.title, 'Conoce Casa 2 por dentro');
 });
 
 test('Casa A uses its own real property photography without assigning images to Casa B', () => {
@@ -133,7 +138,7 @@ test('Casa A uses its own real property photography without assigning images to 
     asset && existsSync(join(process.cwd(), 'public', asset.src.slice(1))),
   ));
   assert.equal(casaA.media.videos.shared?.title, '10 razones para comprar estas casas');
-  assert.equal(casaA.media.videos.property?.title, 'Hay lugares que se sienten como vacaciones.');
+  assert.equal(casaA.media.videos.property?.title, 'Hay lugares que se sienten como vacaciones');
   assert.equal(casaA.media.videos.shared?.youtubeId, 'rJWKPUV2EqI');
   assert.equal(casaA.media.videos.property?.youtubeId, 'kvjobT6w3mA');
   assert.strictEqual(casaA.media.videos.shared, casaB.media.videos.shared);
@@ -150,10 +155,13 @@ test('Casa A uses its own real property photography without assigning images to 
     'Muebles en mampostería.',
   ]);
   assert.equal(formatWhatsAppNumber(casaA.contact.whatsappNumber), '301 136 0508');
+  assert.equal(casaA.name, 'Casa 1 · San Marcos');
   assert.equal(
     createWhatsAppUrl(casaA, 'recibir información'),
-    'https://wa.me/573011360508?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Casa%20A%20%C2%B7%20San%20Marcos%20en%20Ricaurte%2C%20Cundinamarca.',
+    'https://wa.me/573011360508?text=Hola%2C%20quiero%20recibir%20informaci%C3%B3n%20sobre%20Casa%201%20%C2%B7%20San%20Marcos%20en%20Ricaurte%2C%20Cundinamarca.',
   );
+  assert.equal(casaB.name, 'Casa 2 · San Marcos');
+  assert.match(decodeURIComponent(createWhatsAppUrl(casaB, 'agendar una visita') ?? ''), /sobre Casa 2 · San Marcos en Ricaurte, Cundinamarca/);
   assert.ok(casaB.media.hero?.src.startsWith('/properties/casa-b-girardot/'));
   assert.ok(casaB.media.gallery.every(({ src }) => src.startsWith('/properties/casa-b-girardot/')));
 });
