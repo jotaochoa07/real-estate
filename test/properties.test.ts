@@ -21,11 +21,14 @@ test('Casa 1 uses the approved public URL and its former route redirects', () =>
   const casaOneRoute = readFileSync(join(process.cwd(), 'src/app/casa-ricaurte-1/page.tsx'), 'utf8');
   const legacyRoute = readFileSync(join(process.cwd(), 'src/app/casas/[slug]/page.tsx'), 'utf8');
   const homeRoute = readFileSync(join(process.cwd(), 'src/app/page.tsx'), 'utf8');
+  const casaTwoRoute = readFileSync(join(process.cwd(), 'src/app/casa-ricaurte-2/page.tsx'), 'utf8');
 
   assert.ok(casaOneRoute.includes("getPropertyBySlug('casa-ricaurte-1')"));
   assert.ok(casaOneRoute.includes('https://realestate.smarthunter.co/casa-ricaurte-1'));
   assert.ok(legacyRoute.includes("redirect('/casa-ricaurte-1')"));
   assert.ok(legacyRoute.includes("redirect('/casa-ricaurte-2')"));
+  assert.ok(casaTwoRoute.includes("getPropertyBySlug('casa-ricaurte-2')"));
+  assert.ok(casaTwoRoute.includes('https://realestate.smarthunter.co/casa-ricaurte-2'));
   assert.ok(homeRoute.includes("redirect('/casa-ricaurte-1')"));
   assert.equal(properties['casa-ricaurte-1'].slug, 'casa-ricaurte-1');
   assert.equal(properties['casa-ricaurte-2'].slug, 'casa-ricaurte-2');
